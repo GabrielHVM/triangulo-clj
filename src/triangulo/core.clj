@@ -2,60 +2,100 @@
   (:require [clojure.math :as math]))
 
 (defn calc-perimetro
-  "Calcula o perimetro do triangulo, dado A B e C"
+  "Dado os lados [a b c] do triangulo, retorna o seu perimetro"
   [a b c]
   (+ a b c))
 
 (defn calc-radianos
-  "TODO: Calcular radianos dado lados a b e c de um triangulo"
+  "Dado os lados [a b c] do triangulo, retorna o ângulo ∠A em radianos"
   [a b c]
-  )
+  (let [sqr-a (* a a)
+        sqr-b (* b b)
+        sqr-c (* c c)
+        divider (* 2 (* b c))]
+    (-> (+ sqr-b sqr-c)
+        (- sqr-a)
+        (/ divider)
+        math/acos)))
 
 (defn calc-angulo
-  "TODO: Calcula o ângulo ∠A, dado A B C."
+  "Dado os lados [a b c] do triangulo, retorna o ângulo ∠A em graus"
   [a b c]
-  )
+  (-> (calc-radianos a b c)
+      math/to-degrees))
 
 (defn calc-area
-  "TODO: Calcula a área de um triângulo usando a formula de Heron."
+  "Dado os lados [a b c] do triangulo, retorna sua area"
   [a b c]
-  )
+  (let [half-the-perimeter (/ (calc-perimetro a b c) 2)
+        vector-of-sides (vector a b c)]
+    (->> (map #(- half-the-perimeter %) vector-of-sides)
+        (reduce * )
+        (* half-the-perimeter)
+        math/sqrt)))
 
 (defn calc-altura
-  "TODO: Calcula altura de A, dado a AREA."
+  "Dado um lado [a] do triangulo e sua area, retorna a altura do lado [a] até o vertice oposto"
   [a area]
-  )
+  (-> (* 2 area)
+      (/ a)))
 
 (defn equilateral?
-  "TODO: Verifica se o triangulo é equilateral"
+  "Dado os lados [a b c] do triangulo, retorna se ele é equilatero
+  Um triangulo equilatero possui todos os seus lados com mesma medida"
   [a b c]
-  )
+  (== a b c))
 
 (defn isosceles?
-  "TODO: Verifica se pelo menos dois lados sao iguais."
+  "Dado os lados [a b c] do triangulo, retorna se ele é isosceles
+  Um triangulo isosceles possui pelo menos dois lados com mesma medida"
   [a b c]
-  )
+  (or
+    (= a b)
+    (= b c)
+    (= a c)))
 
 (defn escaleno?
-  "TODO: Verifica se os lados dos triangulos sao diferentes entre si."
+  "Dado os lados [a b c] do triangulo, retorna se ele é escaleno
+  Um Triangulo escaleno possui todos os lados com medidas diferentes"
   [a b c]
+  (not (isosceles? a b c))
   )
+
+(defn calcula-todos-angulos
+  "Dado os lados [a b c] do triangulo, retorna uma lista com todos os angulos em graus.
+  Obs.: O resultado não é exato já que o angulo é arredondado"
+  [a b c]
+  (let [a-angle (math/round (calc-angulo a b c))
+        b-angle (math/round (calc-angulo b a c))
+        c-angle (math/round (calc-angulo c a b))]
+    (list a-angle b-angle c-angle)
+    ))
 
 (defn retangulo?
-  "TODO: Verifica se é um triangulo retangulo, cujos angulos são iguais a 90o.
-  O resultado não é exato, dado que cada angulo é arredondado utilizando clojure.math/round."
+  "Dado os lados [a b c] do triangulo, retorna se o triangulo é retangulo
+  Um triangulo retangulo é um triangulo em que possui pelo menos um angulo igual a 90"
   [a b c]
-  )
+  (let [all-angles (calcula-todos-angulos a b c)
+        right-angle? (partial = 90)]
+    (boolean (some right-angle? all-angles))
+    ))
 
 (defn obtuso?
-  "TODO: Verifica se o triangulo é obtuso, tendo algum angulo >90o."
+  "Dado os lados [a b c] do triangulo, verifica se o triangulo é obtusângulo
+  Um triangulo é obstusângulo caso exista algum angulo maior do que 90"
   [a b c]
-  )
+  (let [all-angles (calcula-todos-angulos a b c)
+        obtuse-angle? #(> % 90)]
+    (boolean (some obtuse-angle? all-angles))))
 
 (defn agudo?
-  "TODO: Verifica se o triangulo é obtuso, tendo algum angulo >90o."
+  "Dado os lados [a b c] do triangulo, retorna se o triangulo é acutângulo
+  O triangulo é acutângulo caso exista algum angulo menor do que 90"
   [a b c]
-  )
+  (let [all-angles (calcula-todos-angulos a b c)
+        acute-angle? #(< % 90)]
+    (every? acute-angle? all-angles)))
 
 (defn gerar-dados-completos
   [a b c]
