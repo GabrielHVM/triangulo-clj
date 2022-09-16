@@ -28,8 +28,9 @@
   "Dado os lados [a b c] do triangulo, retorna sua area"
   [a b c]
   (let [half-the-perimeter (/ (calc-perimetro a b c) 2)
-        vector-of-sides (vector a b c)]
-    (->> (map #(- half-the-perimeter %) vector-of-sides)
+        vector-of-sides (vector a b c)
+        subtract-half-perimeter (partial - half-the-perimeter)]
+    (->> (map subtract-half-perimeter vector-of-sides)
         (reduce * )
         (* half-the-perimeter)
         math/sqrt)))
